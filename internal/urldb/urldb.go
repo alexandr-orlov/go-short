@@ -14,7 +14,7 @@ func GetMD5Hash(text string) string {
 
 type Urldb map[string]string
 
-func (db Urldb) Add(url string) (string, error) {
+func (db Urldb) Create(url string) (string, error) {
 	id := GetMD5Hash(url)[:8]
 	db[id] = url
 	return id, nil

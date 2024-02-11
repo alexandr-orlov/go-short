@@ -45,7 +45,7 @@ func PostHandler(res http.ResponseWriter, req *http.Request, udb urldb.Urldb) {
 			http.Error(res, "BadRequest", http.StatusBadRequest)
 		}
 
-		id, err := udb.Add(string(body))
+		id, err := udb.Create(string(body))
 		if err != nil {
 			http.Error(res, "BadRequest", http.StatusBadRequest)
 		}
