@@ -84,15 +84,15 @@ func TestPostHandler(t *testing.T) {
 	udb := make(urldb.Urldb)
 
 	testCases := []struct {
-		name     string
-		request  string
-		data_url string
-		want     want
+		name    string
+		request string
+		dataURL string
+		want    want
 	}{
 		{
-			name:     "POST any url",
-			request:  "/anyid",
-			data_url: "",
+			name:    "POST any url",
+			request: "/anyid",
+			dataURL: "",
 			want: want{
 				code:        http.StatusBadRequest,
 				response:    "",
@@ -101,9 +101,9 @@ func TestPostHandler(t *testing.T) {
 		},
 
 		{
-			name:     "POST https://ya.ru",
-			request:  "/",
-			data_url: "https://ya.ru",
+			name:    "POST https://ya.ru",
+			request: "/",
+			dataURL: "https://ya.ru",
 			want: want{
 				code:        http.StatusCreated,
 				response:    "http://localhost:8080/e98192e1",
@@ -115,7 +115,7 @@ func TestPostHandler(t *testing.T) {
 	for _, test := range testCases {
 		t.Run(test.name, func(t *testing.T) {
 
-			request := httptest.NewRequest(http.MethodPost, test.request, strings.NewReader(test.data_url))
+			request := httptest.NewRequest(http.MethodPost, test.request, strings.NewReader(test.dataURL))
 			// создаём новый Recorder
 			w := httptest.NewRecorder()
 			PostHandler(w, request, udb)
