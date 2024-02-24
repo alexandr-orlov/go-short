@@ -28,7 +28,6 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 
 	respBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
-	defer resp.Body.Close()
 
 	return resp, string(respBody)
 }
@@ -52,6 +51,7 @@ func TestRouter(t *testing.T) {
 	}
 	for _, v := range testTable {
 		resp, get := testRequest(t, ts, v.method, v.url, v.data)
+		defer resp.Body.Close()
 
 		assert.Equal(t, v.status, resp.StatusCode)
 		assert.Equal(t, v.want, get)
