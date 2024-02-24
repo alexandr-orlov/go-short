@@ -1,4 +1,4 @@
-package handlers
+package routers
 
 import (
 	"io"
@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/alexandr-orlov/go-short/internal/app"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,7 +33,7 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 }
 
 func TestRouter(t *testing.T) {
-	ts := httptest.NewServer(app.UrlRouter())
+	ts := httptest.NewServer(URLRouter())
 	defer ts.Close()
 
 	var testTable = []struct {
