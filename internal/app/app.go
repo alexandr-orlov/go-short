@@ -4,16 +4,20 @@ import (
 	"net/http"
 
 	"github.com/alexandr-orlov/go-short/internal/handlers"
-	"github.com/alexandr-orlov/go-short/internal/urldb"
+	"github.com/go-chi/chi"
 )
+
+func UrlRouter() chi.Router {
+	r := chi.NewRouter()
+	r.Get("/", handlers.GetRootHandler)
+	r.Get("/{id}", handlers.GetHandler)
+	r.Post("/", handlers.PostHandler)
+
+	return r
+}
 
 func Run() {
 
-	udb := make(urldb.Urldb)
+	http.ListenAndServe(":8080", UrlRouter())
 
-	http.HandleFunc("/", handlers.MakeRootHandler(udb))
-	err := http.ListenAndServe("localhost:8080", nil)
-	if err != nil {
-		panic(err)
-	}
 }

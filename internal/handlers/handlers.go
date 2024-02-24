@@ -5,40 +5,31 @@ import (
 	"net/http"
 
 	"github.com/alexandr-orlov/go-short/internal/urldb"
+	"github.com/go-chi/chi"
 )
 
-func MakeRootHandler(udb urldb.Urldb) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		if req.Method == http.MethodPost {
-			PostHandler(res, req, udb)
-		} else if req.Method == http.MethodGet {
-			GetHandler(res, req, udb)
-		} else {
-			http.Error(res, "BadRequest", http.StatusBadRequest)
-		}
-	}
-}
+var udb = make(urldb.Urldb)
 
-func GetHandler(res http.ResponseWriter, req *http.Request, udb urldb.Urldb) {
-	if req.URL.Path == "/" {
+func GetHandler(res http.ResponseWriter, req *http.Request) {
+
+	// do get log
+	id := chi.URLParam(req, "id")
+
+	url, err := udb.Get(id)
+	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
 		return
-	} else {
-		// do get log
-		id := req.URL.Path[1:]
-		url, err := udb.Get(id)
-		if err != nil {
-			res.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		res.Header().Set("Location", url)
-		res.WriteHeader(http.StatusTemporaryRedirect)
-		return
 	}
+
+	res.Header().Set("Location", url)
+	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func PostHandler(res http.ResponseWriter, req *http.Request, udb urldb.Urldb) {
+func GetRootHandler(res http.ResponseWriter, req *http.Request) {
+	res.WriteHeader(http.StatusBadRequest)
+}
+
+func PostHandler(res http.ResponseWriter, req *http.Request) {
 	if req.URL.Path == "/" {
 		body, err := io.ReadAll(req.Body)
 		if err != nil {

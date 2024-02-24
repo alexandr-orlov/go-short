@@ -7,126 +7,53 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/alexandr-orlov/go-short/internal/urldb"
+	"github.com/alexandr-orlov/go-short/internal/app"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetHandler(t *testing.T) {
-	type want struct {
-		code           int
-		response       string
-		contentType    string
-		LocationHeader string
+func testRequest(t *testing.T, ts *httptest.Server, method,
+	path, data string) (*http.Response, string) {
+	req, err := http.NewRequest(method, ts.URL+path, strings.NewReader(data))
+	require.NoError(t, err)
+
+	client := ts.Client()
+
+	client.CheckRedirect = func(req *http.Request, via []*http.Request) error {
+		return http.ErrUseLastResponse
 	}
 
-	udb := make(urldb.Urldb)
+	resp, err := client.Do(req)
+	require.NoError(t, err)
+	defer resp.Body.Close()
 
-	testCases := []struct {
-		name    string
-		request string
-		want    want
-	}{
-		{
-			name:    "GET / - BadRequest",
-			request: "/",
-			want: want{
-				code:           http.StatusBadRequest,
-				response:       "",
-				contentType:    "",
-				LocationHeader: "",
-			},
-		},
-		{
-			name:    "GET /e98192e1",
-			request: "/e98192e1",
-			want: want{
-				code:           http.StatusTemporaryRedirect,
-				response:       "",
-				contentType:    "",
-				LocationHeader: "https://ya.ru",
-			},
-		},
-	}
+	respBody, err := io.ReadAll(resp.Body)
+	require.NoError(t, err)
 
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-			// Добавляем в базу /id
-			_, err := udb.Create(test.want.LocationHeader)
-			require.NoError(t, err)
-
-			request := httptest.NewRequest(http.MethodGet, test.request, nil)
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			GetHandler(w, request, udb)
-			res := w.Result()
-
-			// проверяем код ответа
-			assert.Equal(t, test.want.code, res.StatusCode)
-			defer res.Body.Close()
-			resBody, err := io.ReadAll(res.Body)
-			locationHeader := res.Header.Get("Location")
-
-			require.NoError(t, err)
-			assert.Equal(t, test.want.response, string(resBody))
-			assert.Equal(t, test.want.LocationHeader, locationHeader)
-		})
-	}
+	return resp, string(respBody)
 }
 
-func TestPostHandler(t *testing.T) {
-	type want struct {
-		code        int
-		response    string
-		contentType string
-	}
+func TestRouter(t *testing.T) {
+	ts := httptest.NewServer(app.UrlRouter())
+	defer ts.Close()
 
-	udb := make(urldb.Urldb)
-
-	testCases := []struct {
-		name    string
-		request string
-		dataURL string
-		want    want
+	var testTable = []struct {
+		url            string
+		want           string
+		method         string
+		status         int
+		data           string
+		locationHeader string
 	}{
-		{
-			name:    "POST any url",
-			request: "/anyid",
-			dataURL: "",
-			want: want{
-				code:        http.StatusBadRequest,
-				response:    "",
-				contentType: "",
-			},
-		},
-
-		{
-			name:    "POST https://ya.ru",
-			request: "/",
-			dataURL: "https://ya.ru",
-			want: want{
-				code:        http.StatusCreated,
-				response:    "http://localhost:8080/e98192e1",
-				contentType: "text/plain",
-			},
-		},
+		{"/", "", http.MethodGet, http.StatusBadRequest, "", ""},
+		{"/", "http://localhost:8080/e98192e1", http.MethodPost, http.StatusCreated, "https://ya.ru", ""},
+		{"/e98192e1", "", http.MethodGet, http.StatusTemporaryRedirect, "", "https://ya.ru"},
+		{"/someid1", "", http.MethodGet, http.StatusBadRequest, "", ""},
 	}
-
-	for _, test := range testCases {
-		t.Run(test.name, func(t *testing.T) {
-
-			request := httptest.NewRequest(http.MethodPost, test.request, strings.NewReader(test.dataURL))
-			// создаём новый Recorder
-			w := httptest.NewRecorder()
-			PostHandler(w, request, udb)
-			res := w.Result()
-
-			// проверяем код ответа
-			assert.Equal(t, test.want.code, res.StatusCode)
-			defer res.Body.Close()
-			resBody, err := io.ReadAll(res.Body)
-			require.NoError(t, err)
-			assert.Equal(t, test.want.response, string(resBody))
-		})
+	for _, v := range testTable {
+		resp, get := testRequest(t, ts, v.method, v.url, v.data)
+		assert.Equal(t, v.status, resp.StatusCode)
+		assert.Equal(t, v.want, get)
+		assert.Equal(t, v.locationHeader, resp.Header.Get("Location"))
 	}
 }
