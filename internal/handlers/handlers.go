@@ -44,7 +44,7 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 
 		// status code 201
 		res.WriteHeader(http.StatusCreated)
-		url := config.BaseURL + id
+		url := config.BaseURL + "/" + id
 		res.Write([]byte(url))
 		return
 	} else {
