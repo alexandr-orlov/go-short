@@ -31,8 +31,6 @@ func GetRootHandler(res http.ResponseWriter, req *http.Request) {
 }
 
 func PostHandler(res http.ResponseWriter, req *http.Request) {
-	config.ParseFlags()
-
 	if req.URL.Path == "/" {
 		body, err := io.ReadAll(req.Body)
 		if err != nil {

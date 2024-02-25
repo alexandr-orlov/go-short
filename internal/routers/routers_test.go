@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/alexandr-orlov/go-short/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -33,6 +34,7 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 }
 
 func TestRouter(t *testing.T) {
+	config.ParseFlags()
 	ts := httptest.NewServer(URLRouter())
 	defer ts.Close()
 
