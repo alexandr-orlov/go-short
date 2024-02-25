@@ -4,6 +4,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/alexandr-orlov/go-short/config"
 	"github.com/alexandr-orlov/go-short/internal/urldb"
 	"github.com/go-chi/chi"
 )
@@ -43,7 +44,8 @@ func PostHandler(res http.ResponseWriter, req *http.Request) {
 
 		// status code 201
 		res.WriteHeader(http.StatusCreated)
-		url := "http://localhost:8080/" + id
+		//url := "http://localhost:8080/" + id
+		url := config.BaseURL + id
 		res.Write([]byte(url))
 		return
 	} else {
