@@ -34,7 +34,7 @@ func testRequest(t *testing.T, ts *httptest.Server, method,
 }
 
 func TestRouter(t *testing.T) {
-	config.ParseFlags()
+	config.GetConfig()
 	ts := httptest.NewServer(URLRouter())
 	defer ts.Close()
 
