@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	config.ParseFlags()
+	config.GetConfig()
 	app.Run()
 }
