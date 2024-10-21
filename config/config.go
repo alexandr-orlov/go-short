@@ -20,8 +20,8 @@ func GetConfig() {
 		ListenAddr = SrvAddr
 	}
 
-	EnvUrl, exists := os.LookupEnv("BASE_URL")
+	EnvURL, exists := os.LookupEnv("BASE_URL")
 	if exists {
-		BaseURL = EnvUrl
+		BaseURL = EnvURL
 	}
 }
